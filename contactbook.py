@@ -1,62 +1,67 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import *
+import csv
 
 class ContactBookApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Contact Book App")
-
+        self.root.geometry("1090x555+300+25")
         self.contacts = []
 
+        # Define keyboard shortcuts
+        self.root.bind("<Control-n>", self.add_contact)  # Ctrl + N to add a contact
+        self.root.bind("<Delete>", self.delete_contact)   # Delete key to delete a contact
+        self.root.bind("<Control-f>", self.focus_search_entry)  # Ctrl + F to focus on the search entry
+
         self.notebook = ttk.Notebook(self.root)
-        self.tab1 = Frame(self.notebook,bg="darkturquoise")
-        self.tab2 = Frame(self.notebook,bg="darkturquoise")
+        self.tab1 = Frame(self.notebook, bg="darkturquoise")
+        self.tab2 = Frame(self.notebook, bg="darkturquoise")
         self.notebook.add(self.tab1, text="Add Contact")
         self.notebook.add(self.tab2, text="View Contacts")
         self.notebook.pack()
 
         self.init_add_contact_tab()
-
         self.init_view_contacts_tab()
 
     def init_add_contact_tab(self):
-        label = Label(self.tab1, text="Add Contact", font=("Arial", 20), bg = "#FF9912")
+        label = Label(self.tab1, text="Add Contact", font=("Arial", 20), bg="#FF9912")
         label.pack(pady=10)
 
-        name_label = Label(self.tab1, text="Name:", font=("Arial", 15), bg = "lawngreen")
+        name_label = Label(self.tab1, text="Name:", font=("Arial", 15), bg="lawngreen")
         name_label.pack()
         self.name_entry = Entry(self.tab1, font=("Arial", 15))
-        self.name_entry.pack()
+        self.name_entry.pack(pady=10)
 
-        phone_label = Label(self.tab1, text="Phone:", font=("Arial", 15), bg = "lawngreen")
+        phone_label = Label(self.tab1, text="Phone:", font=("Arial", 15), bg="lawngreen")
         phone_label.pack()
         self.phone_entry = Entry(self.tab1, font=("Arial", 15))
-        self.phone_entry.pack()
+        self.phone_entry.pack(pady=10)
 
-        email_label = Label(self.tab1, text="Email:", font=("Arial", 15), bg = "lawngreen")
+        email_label = Label(self.tab1, text="Email:", font=("Arial", 15), bg="lawngreen")
         email_label.pack()
         self.email_entry = Entry(self.tab1, font=("Arial", 15))
-        self.email_entry.pack()
+        self.email_entry.pack(pady=10)
 
-        address_label = Label(self.tab1, text="Address:", font=("Arial", 15), bg = "lawngreen")
+        address_label = Label(self.tab1, text="Address:", font=("Arial", 15), bg="lawngreen")
         address_label.pack()
         self.address_entry = Entry(self.tab1, font=("Arial", 15))
-        self.address_entry.pack()
+        self.address_entry.pack(pady=10)
 
-        add_button = Button(self.tab1, text="Add Contact", command=self.add_contact, font=("Arial", 15), bg = "lawngreen")
+        add_button = Button(self.tab1, text="Add Contact", command=self.add_contact, font=("Arial", 15), bg="lawngreen")
         add_button.pack(pady=10)
 
     def init_view_contacts_tab(self):
-        label = Label(self.tab2, text="View Contacts", font=("Arial", 20), bg = "#FF9912")
+        label = Label(self.tab2, text="View Contacts", font=("Arial", 20), bg="#FF9912")
         label.pack(pady=10)
 
-        search_label = Label(self.tab2, text="Search:", font=("Arial", 15), bg = "lawngreen")
+        search_label = Label(self.tab2, text="Search:", font=("Arial", 15), bg="lawngreen")
         search_label.pack()
         self.search_entry = Entry(self.tab2, font=("Arial", 15))
-        self.search_entry.pack()
+        self.search_entry.pack(pady=10)
 
-        search_button = Button(self.tab2, text="Search", command=self.search_contacts, font=("Arial", 15), bg = "lawngreen")
+        search_button = Button(self.tab2, text="Search", command=self.search_contacts, font=("Arial", 15), bg="lawngreen")
         search_button.pack(pady=5)
 
         self.contacts_treeview = ttk.Treeview(self.tab2, columns=("Name", "Phone", "Email", "Address"), show="headings")
@@ -67,10 +72,38 @@ class ContactBookApp:
         self.contacts_treeview.pack(padx=10, pady=10)
         self.update_contacts_treeview()
 
-        delete_button = Button(self.tab2, text="Delete Contact", command=self.delete_contact, font=("Arial", 15), bg = "lawngreen")
-        delete_button.pack(pady=5)
+        button_frame = Frame(self.tab2, bg="darkturquoise")
+        button_frame.pack(pady=10)
 
-    def add_contact(self):
+        edit_button = Button(button_frame, text="Edit Contact", command=self.edit_contact, font=("Arial", 15), bg="lawngreen")
+        edit_button.pack(side=LEFT, padx=10)
+
+        delete_button = Button(button_frame, text="Delete Contact", command=self.delete_contact, font=("Arial", 15), bg="lawngreen")
+        delete_button.pack(side=LEFT, padx=10)
+
+        merge_button = Button(button_frame, text="Merge Contacts", command=self.merge_contacts, font=("Arial", 15), bg="lawngreen")
+        merge_button.pack(side=LEFT, padx=10)
+
+        export_button = Button(button_frame, text="Export Contacts (CSV)", command=self.export_contacts_to_csv, font=("Arial", 15), bg="lawngreen")
+        export_button.pack(side=LEFT, padx=10)
+
+        load_button = Button(button_frame, text="Load Contacts", command=self.load_contacts_from_csv, font=("Arial", 15), bg="lawngreen")
+        load_button.pack(side=LEFT, padx=10)
+
+        stats_button = Button(button_frame, text="Contact Statistics", command=self.display_contact_statistics,
+                              font=("Arial", 15), bg="lawngreen")
+        stats_button.pack(side=LEFT, padx=10)
+
+        # Label to display contact statistics
+        self.stats_label = Label(self.tab2, text="", font=("Arial", 15), bg="darkturquoise")
+        self.stats_label.pack(pady=5)
+
+    def display_contact_statistics(self):
+        num_contacts = len(self.contacts)
+        stats_text = f"Number of Contacts: {num_contacts}"
+        self.stats_label.config(text=stats_text)
+
+    def add_contact(self, event=None):
         name = self.name_entry.get()
         phone = self.phone_entry.get()
         email = self.email_entry.get()
@@ -91,6 +124,7 @@ class ContactBookApp:
         self.address_entry.delete(0, END)
 
     def update_contacts_treeview(self):
+        self.contacts.sort(key=lambda contact: contact["Name"].lower())
         self.contacts_treeview.delete(*self.contacts_treeview.get_children())
         for contact in self.contacts:
             self.contacts_treeview.insert("", "end", values=(contact["Name"], contact["Phone"], contact["Email"], contact["Address"]))
@@ -106,18 +140,98 @@ class ContactBookApp:
                 self.contacts_treeview.selection_set(item)
                 self.contacts_treeview.focus(item)
                 found_match = True
-
         if not found_match:
             showinfo("Info", f"No contact with '{search_text}' found.")
 
-    
-    def delete_contact(self):
+    def edit_contact(self):
+        selected_item = self.contacts_treeview.selection()
+        if selected_item:
+            selected_contact = self.contacts[self.contacts_treeview.index(selected_item)]
+            edit_window = Toplevel(self.root)
+            edit_window.title("Edit Contact")
+            edit_window.geometry("300x300")
+            edit_window.config(bg="darkturquoise")
+
+            edit_name_label = Label(edit_window, text="Name:", font=("Arial", 15), bg="lawngreen")
+            edit_name_label.pack()
+            edit_name_entry = Entry(edit_window, font=("Arial", 15))
+            edit_name_entry.pack()
+            edit_name_entry.insert(0, selected_contact["Name"])
+
+            edit_phone_label = Label(edit_window, text="Phone:", font=("Arial", 15), bg="lawngreen")
+            edit_phone_label.pack()
+            edit_phone_entry = Entry(edit_window, font=("Arial", 15))
+            edit_phone_entry.pack()
+            edit_phone_entry.insert(0, selected_contact["Phone"])
+
+            edit_email_label = Label(edit_window, text="Email:", font=("Arial", 15), bg="lawngreen")
+            edit_email_label.pack()
+            edit_email_entry = Entry(edit_window, font=("Arial", 15))
+            edit_email_entry.pack()
+            edit_email_entry.insert(0, selected_contact["Email"])
+
+            edit_address_label = Label(edit_window, text="Address:", font=("Arial", 15), bg="lawngreen")
+            edit_address_label.pack()
+            edit_address_entry = Entry(edit_window, font=("Arial", 15))
+            edit_address_entry.pack()
+            edit_address_entry.insert(0, selected_contact["Address"])
+
+            def save_edited_contact():
+                selected_contact["Name"] = edit_name_entry.get()
+                selected_contact["Phone"] = edit_phone_entry.get()
+                selected_contact["Email"] = edit_email_entry.get()
+                selected_contact["Address"] = edit_address_entry.get()
+                self.update_contacts_treeview()
+                edit_window.destroy()
+
+            save_button = Button(edit_window, text="Save", command=save_edited_contact, font=("Arial", 15), bg="lawngreen")
+            save_button.pack(pady=10)
+
+    def delete_contact(self, event=None):
         selected_item = self.contacts_treeview.selection()
         if selected_item:
             selected_contact = self.contacts[self.contacts_treeview.index(selected_item)]
             self.contacts.remove(selected_contact)
             self.update_contacts_treeview()
             showinfo("Success", "Contact deleted successfully!")
+
+    def focus_search_entry(self, event=None):
+        self.search_entry.focus()
+
+    def merge_contacts(self):
+        merged_contacts = {}
+        for contact in self.contacts:
+            name = contact["Name"]
+            if name not in merged_contacts:
+                merged_contacts[name] = contact
+            else:
+                merged_contacts[name].update(contact)
+        self.contacts = list(merged_contacts.values())
+        self.update_contacts_treeview()
+        showinfo("Success", "Duplicate contacts merged.")
+
+    def load_contacts_from_csv(self):
+        try:
+            with open("contacts.csv", mode="r", newline="") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    self.contacts.append(row)
+            self.update_contacts_treeview()
+            showinfo("Success", "Contacts loaded from CSV file.")
+        except FileNotFoundError:
+            showerror("Error", "CSV file not found.")
+
+    def export_contacts_to_csv(self):
+        try:
+            with open("contacts.csv", mode="w", newline="") as file:
+                fieldnames = ["Name", "Phone", "Email", "Address"]
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                for contact in self.contacts:
+                    writer.writerow(contact)
+            showinfo("Success", "Contacts exported to CSV file.")
+        except Exception as e:
+            showerror("Error", f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     root = Tk()
