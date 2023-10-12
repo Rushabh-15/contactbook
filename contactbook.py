@@ -3,13 +3,27 @@ from tkinter import ttk
 from tkinter.messagebox import showinfo, showwarning, showerror
 import csv
 import re
+import sqlite3
 
 class ContactBookApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Contact Book App")
         self.root.geometry("1090x555+300+25")
-        self.contacts = []
+
+        # Create an SQLite database and table
+        self.conn = sqlite3.connect("contacts.db")
+        self.cursor = self.conn.cursor()
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS contacts (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                phone TEXT,
+                email TEXT,
+                address TEXT
+            )
+        ''')
+        self.conn.commit()
 
         # Define keyboard shortcuts
         self.root.bind("<Control-n>", self.add_contact)  # Ctrl + N to add a contact
@@ -25,6 +39,7 @@ class ContactBookApp:
 
         self.init_add_contact_tab()
         self.init_view_contacts_tab()
+        self.update_contacts_treeview()  # Load contacts initially
 
     def init_add_contact_tab(self):
         label = tk.Label(self.tab1, text="Add Contact", font=("Arial", 20), bg="#FF9912")
@@ -71,7 +86,6 @@ class ContactBookApp:
         self.contacts_treeview.heading("Email", text="Email")
         self.contacts_treeview.heading("Address", text="Address")
         self.contacts_treeview.pack(padx=10, pady=10)
-        self.update_contacts_treeview()
 
         button_frame = tk.Frame(self.tab2, bg="darkturquoise")
         button_frame.pack(pady=10)
@@ -85,18 +99,18 @@ class ContactBookApp:
         merge_button = tk.Button(button_frame, text="Merge Contacts", command=self.merge_contacts, font=("Arial", 15), bg="lawngreen")
         merge_button.pack(side=tk.LEFT, padx=10)
 
-        export_button = tk.Button(button_frame, text="Export Contacts (CSV)", command=self.export_contacts_to_csv, font=("Arial", 15), bg="lawngreen")
-        export_button.pack(side=tk.LEFT, padx=10)
+        export_csv_button = tk.Button(button_frame, text="Export Contacts (CSV)", command=self.export_contacts_to_csv, font=("Arial", 15), bg="lawngreen")
+        export_csv_button.pack(side=tk.LEFT, padx=10)
 
-        load_button = tk.Button(button_frame, text="Load Contacts", command=self.load_contacts_from_csv, font=("Arial", 15), bg="lawngreen")
-        load_button.pack(side=tk.LEFT, padx=10)
+        load_csv_button = tk.Button(button_frame, text="Load Contacts", command=self.load_contacts_from_csv, font=("Arial", 15), bg="lawngreen")
+        load_csv_button.pack(side=tk.LEFT, padx=10)
 
         stats_button = tk.Button(button_frame, text="Contact Statistics", command=self.display_contact_statistics,
                               font=("Arial", 15), bg="lawngreen")
         stats_button.pack(side=tk.LEFT, padx=10)
 
         self.stats_label = tk.Label(self.tab2, text="", font=("Arial", 15), bg="darkturquoise")
-        self.stats_label.pack(pady=5)
+        self.stats_label.pack(pady=10)
 
     def display_contact_statistics(self):
         num_contacts = len(self.contacts)
@@ -116,11 +130,15 @@ class ContactBookApp:
         elif not self.is_valid_phone(phone):
             showwarning("Validation Error", "Phone number should only contain digits.")
         elif email and not self.is_valid_email(email):
-            showwarning("Validation Error", "Invalid Email format.")
+            showwarning("Validation Error", "Invalid email format.")
         else:
-            self.contacts.append({"Name": name, "Phone": phone, "Email": email, "Address": address})
-            self.clear_add_contact_fields()
+            # Insert contact data into the SQLite database
+            self.cursor.execute("INSERT INTO contacts (name, phone, email, address) VALUES (?, ?, ?, ?)",
+                            (name, phone, email, address))
+            self.conn.commit()
+            
             self.update_contacts_treeview()
+            self.clear_add_contact_fields()
             showinfo("Success", "Contact added successfully!")
 
     def clear_add_contact_fields(self):
@@ -130,9 +148,12 @@ class ContactBookApp:
         self.address_entry.delete(0, tk.END)
 
     def update_contacts_treeview(self):
-        self.contacts.sort(key=lambda contact: contact["Name"].lower())
         self.contacts_treeview.delete(*self.contacts_treeview.get_children())
-        for contact in self.contacts:
+        self.cursor.execute("SELECT * FROM contacts")
+        self.contacts = []  # Initialize the contacts list
+        for row in self.cursor.fetchall():
+            contact = {"ID": row[0], "Name": row[1], "Phone": row[2], "Email": row[3], "Address": row[4]}
+            self.contacts.append(contact)  # Append contact data to the list
             self.contacts_treeview.insert("", "end", values=(contact["Name"], contact["Phone"], contact["Email"], contact["Address"]))
 
     def search_contacts(self):
@@ -160,35 +181,55 @@ class ContactBookApp:
 
             edit_name_label = tk.Label(edit_window, text="Name:", font=("Arial", 15), bg="lawngreen")
             edit_name_label.pack()
-            edit_name_entry = tk.Entry(edit_window, font=("Arial", 15))
+            edit_name_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_name_entry.pack()
             edit_name_entry.insert(0, selected_contact["Name"])
 
             edit_phone_label = tk.Label(edit_window, text="Phone:", font=("Arial", 15), bg="lawngreen")
             edit_phone_label.pack()
-            edit_phone_entry = tk.Entry(edit_window, font=("Arial", 15))
+            edit_phone_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_phone_entry.pack()
             edit_phone_entry.insert(0, selected_contact["Phone"])
 
             edit_email_label = tk.Label(edit_window, text="Email:", font=("Arial", 15), bg="lawngreen")
             edit_email_label.pack()
-            edit_email_entry = tk.Entry(edit_window, font=("Arial", 15))
+            edit_email_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_email_entry.pack()
             edit_email_entry.insert(0, selected_contact["Email"])
 
             edit_address_label = tk.Label(edit_window, text="Address:", font=("Arial", 15), bg="lawngreen")
             edit_address_label.pack()
-            edit_address_entry = tk.Entry(edit_window, font=("Arial", 15))
+            edit_address_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_address_entry.pack()
             edit_address_entry.insert(0, selected_contact["Address"])
 
             def save_edited_contact():
-                selected_contact["Name"] = edit_name_entry.get()
-                selected_contact["Phone"] = edit_phone_entry.get()
-                selected_contact["Email"] = edit_email_entry.get()
-                selected_contact["Address"] = edit_address_entry.get()
-                self.update_contacts_treeview()
-                edit_window.destroy()
+                edited_name = edit_name_entry.get()
+                edited_phone = edit_phone_entry.get()
+                edited_email = edit_email_entry.get()
+                edited_address = edit_address_entry.get()
+
+                if not edited_name:
+                    showwarning("Validation Error", "Name is required.")
+                elif not edited_phone:
+                    showwarning("Validation Error", "Phone is required.")
+                elif not self.is_valid_phone(edited_phone):
+                    showwarning("Validation Error", "Phone number should only contain digits.")
+                elif edited_email and not self.is_valid_email(edited_email):
+                    showwarning("Validation Error", "Invalid email format.")
+                else:
+                    # Update the contact in the SQLite database
+                    self.cursor.execute("UPDATE contacts SET name=?, phone=?, email=?, address=? WHERE id=?",
+                                        (edited_name, edited_phone, edited_email, edited_address, selected_contact["ID"]))
+                    self.conn.commit()
+
+                    # Update the contact in the contacts list
+                    selected_contact["Name"] = edited_name
+                    selected_contact["Phone"] = edited_phone
+                    selected_contact["Email"] = edited_email
+                    selected_contact["Address"] = edited_address
+                    self.update_contacts_treeview()
+                    edit_window.destroy()
 
             save_button = tk.Button(edit_window, text="Save", command=save_edited_contact, font=("Arial", 15), bg="lawngreen")
             save_button.pack(pady=10)
@@ -197,6 +238,10 @@ class ContactBookApp:
         selected_item = self.contacts_treeview.selection()
         if selected_item:
             selected_contact = self.contacts[self.contacts_treeview.index(selected_item)]
+            # Delete the contact from the SQLite database
+            self.cursor.execute("DELETE FROM contacts WHERE id=?", (selected_contact["ID"],))
+            self.conn.commit()
+            # Update the contacts list
             self.contacts.remove(selected_contact)
             self.update_contacts_treeview()
             showinfo("Success", "Contact deleted successfully!")
@@ -205,14 +250,34 @@ class ContactBookApp:
         self.search_entry.focus()
 
     def merge_contacts(self):
+        # Create a dictionary to store merged contacts
         merged_contacts = {}
+
         for contact in self.contacts:
             name = contact["Name"]
-            if name not in merged_contacts:
-                merged_contacts[name] = contact
+            email = contact["Email"]
+
+            # Create a unique key based on name and email
+            key = (name, email)
+
+            # Check if the key already exists in merged_contacts
+            if key in merged_contacts:
+                # Merge the contact's information into the existing contact
+                merged_contacts[key].update(contact)
             else:
-                merged_contacts[name].update(contact)
+                # If the key doesn't exist, add the contact to merged_contacts
+                merged_contacts[key] = contact
+
+        # Update the contacts list with the merged contacts
         self.contacts = list(merged_contacts.values())
+
+        # Update the SQLite database with the merged contacts
+        self.cursor.execute("DELETE FROM contacts")
+        for contact in self.contacts:
+            self.cursor.execute("INSERT INTO contacts (name, phone, email, address) VALUES (?, ?, ?, ?)",
+                                (contact["Name"], contact["Phone"], contact["Email"], contact["Address"]))
+        self.conn.commit()
+
         self.update_contacts_treeview()
         showinfo("Success", "Duplicate contacts merged.")
 
@@ -220,8 +285,11 @@ class ContactBookApp:
         try:
             with open("contacts.csv", mode="r", newline="") as file:
                 reader = csv.DictReader(file)
-                for row in reader:
-                    self.contacts.append(row)
+                self.contacts = list(reader)
+                # Add the loaded contacts to the SQLite database
+                self.cursor.executemany("INSERT INTO contacts (name, phone, email, address) VALUES (?, ?, ?, ?)",
+                                        [(contact["Name"], contact["Phone"], contact["Email"], contact["Address"]) for contact in self.contacts])
+                self.conn.commit()
             self.update_contacts_treeview()
             showinfo("Success", "Contacts loaded from CSV file.")
         except FileNotFoundError:
@@ -234,7 +302,9 @@ class ContactBookApp:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 writer.writeheader()
                 for contact in self.contacts:
-                    writer.writerow(contact)
+                    # Exclude the 'ID' field when writing to the CSV file
+                    contact_without_id = {key: value for key, value in contact.items() if key != 'ID'}
+                    writer.writerow(contact_without_id)
             showinfo("Success", "Contacts exported to CSV file.")
         except Exception as e:
             showerror("Error", f"An error occurred: {str(e)}")
