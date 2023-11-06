@@ -31,8 +31,8 @@ class ContactBookApp:
         self.root.bind("<Control-f>", self.focus_search_entry)  # Ctrl + F to focus on the search entry
 
         self.notebook = ttk.Notebook(self.root)
-        self.tab1 = tk.Frame(self.notebook, bg="darkturquoise")
-        self.tab2 = tk.Frame(self.notebook, bg="darkturquoise")
+        self.tab1 = tk.Frame(self.notebook, bg="#FFD700")
+        self.tab2 = tk.Frame(self.notebook, bg="#FFD700")
         self.notebook.add(self.tab1, text="Add Contact")
         self.notebook.add(self.tab2, text="View Contacts")
         self.notebook.pack()
@@ -42,42 +42,42 @@ class ContactBookApp:
         self.update_contacts_treeview()  # Load contacts initially
 
     def init_add_contact_tab(self):
-        label = tk.Label(self.tab1, text="Add Contact", font=("Arial", 20), bg="#FF9912")
+        label = tk.Label(self.tab1, text="Add Contact", font=("Arial", 20), bg="#FF6600", fg="#ffffff")
         label.pack(pady=10)
 
-        name_label = tk.Label(self.tab1, text="Name:", font=("Arial", 15), bg="lawngreen")
+        name_label = tk.Label(self.tab1, text="Name:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         name_label.pack()
         self.name_entry = tk.Entry(self.tab1, font=("Arial", 15))
         self.name_entry.pack(pady=10)
 
-        phone_label = tk.Label(self.tab1, text="Phone:", font=("Arial", 15), bg="lawngreen")
+        phone_label = tk.Label(self.tab1, text="Phone:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         phone_label.pack()
         self.phone_entry = tk.Entry(self.tab1, font=("Arial", 15))
         self.phone_entry.pack(pady=10)
 
-        email_label = tk.Label(self.tab1, text="Email:", font=("Arial", 15), bg="lawngreen")
+        email_label = tk.Label(self.tab1, text="Email:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         email_label.pack()
         self.email_entry = tk.Entry(self.tab1, font=("Arial", 15))
         self.email_entry.pack(pady=10)
 
-        address_label = tk.Label(self.tab1, text="Address:", font=("Arial", 15), bg="lawngreen")
+        address_label = tk.Label(self.tab1, text="Address:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         address_label.pack()
         self.address_entry = tk.Entry(self.tab1, font=("Arial", 15))
         self.address_entry.pack(pady=10)
 
-        add_button = tk.Button(self.tab1, text="Add Contact", command=self.add_contact, font=("Arial", 15), bg="lawngreen")
+        add_button = tk.Button(self.tab1, text="Add Contact", command=self.add_contact, font=("Arial", 15), bg="#228B22", fg="#ffffff")
         add_button.pack(pady=10)
 
     def init_view_contacts_tab(self):
-        label = tk.Label(self.tab2, text="View Contacts", font=("Arial", 20), bg="#FF9912")
+        label = tk.Label(self.tab2, text="View Contacts", font=("Arial", 20), bg="#FF6600", fg="#ffffff")
         label.pack(pady=10)
 
-        search_label = tk.Label(self.tab2, text="Search:", font=("Arial", 15), bg="lawngreen")
+        search_label = tk.Label(self.tab2, text="Search:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         search_label.pack()
         self.search_entry = tk.Entry(self.tab2, font=("Arial", 15))
         self.search_entry.pack(pady=10)
 
-        search_button = tk.Button(self.tab2, text="Search", command=self.search_contacts, font=("Arial", 15), bg="lawngreen")
+        search_button = tk.Button(self.tab2, text="Search", command=self.search_contacts, font=("Arial", 15), bg="#228B22", fg="#ffffff")
         search_button.pack(pady=5)
 
         self.contacts_treeview = ttk.Treeview(self.tab2, columns=("Name", "Phone", "Email", "Address"), show="headings")
@@ -87,29 +87,29 @@ class ContactBookApp:
         self.contacts_treeview.heading("Address", text="Address")
         self.contacts_treeview.pack(padx=10, pady=10)
 
-        button_frame = tk.Frame(self.tab2, bg="darkturquoise")
+        button_frame = tk.Frame(self.tab2, bg="#FFD700")
         button_frame.pack(pady=10)
 
-        edit_button = tk.Button(button_frame, text="Edit Contact", command=self.edit_contact, font=("Arial", 15), bg="lawngreen")
-        edit_button.pack(side=tk.LEFT, padx=10)
-
-        delete_button = tk.Button(button_frame, text="Delete Contact", command=self.delete_contact, font=("Arial", 15), bg="lawngreen")
-        delete_button.pack(side=tk.LEFT, padx=10)
-
-        merge_button = tk.Button(button_frame, text="Merge Contacts", command=self.merge_contacts, font=("Arial", 15), bg="lawngreen")
-        merge_button.pack(side=tk.LEFT, padx=10)
-
-        export_csv_button = tk.Button(button_frame, text="Export Contacts (CSV)", command=self.export_contacts_to_csv, font=("Arial", 15), bg="lawngreen")
-        export_csv_button.pack(side=tk.LEFT, padx=10)
-
-        load_csv_button = tk.Button(button_frame, text="Load Contacts", command=self.load_contacts_from_csv, font=("Arial", 15), bg="lawngreen")
+        load_csv_button = tk.Button(button_frame, text="Load Contacts", command=self.load_contacts_from_csv, font=("Arial", 15), bg="#228B22", fg="#ffffff")
         load_csv_button.pack(side=tk.LEFT, padx=10)
 
+        edit_button = tk.Button(button_frame, text="Edit Contact", command=self.edit_contact, font=("Arial", 15), bg="#228B22", fg="#ffffff")
+        edit_button.pack(side=tk.LEFT, padx=10)
+
+        delete_button = tk.Button(button_frame, text="Delete Contact", command=self.delete_contact, font=("Arial", 15), bg="#228B22", fg="#ffffff")
+        delete_button.pack(side=tk.LEFT, padx=10)
+
+        merge_button = tk.Button(button_frame, text="Merge Contacts", command=self.merge_contacts, font=("Arial", 15), bg="#228B22", fg="#ffffff")
+        merge_button.pack(side=tk.LEFT, padx=10)
+
+        export_csv_button = tk.Button(button_frame, text="Export Contacts (CSV)", command=self.export_contacts_to_csv, font=("Arial", 15), bg="#228B22", fg="#ffffff")
+        export_csv_button.pack(side=tk.LEFT, padx=10)
+
         stats_button = tk.Button(button_frame, text="Contact Statistics", command=self.display_contact_statistics,
-                              font=("Arial", 15), bg="lawngreen")
+                              font=("Arial", 15), bg="#228B22", fg="#ffffff")
         stats_button.pack(side=tk.LEFT, padx=10)
 
-        self.stats_label = tk.Label(self.tab2, text="", font=("Arial", 15), bg="darkturquoise")
+        self.stats_label = tk.Label(self.tab2, text="", font=("Arial", 15), bg="#228B22", fg="#ffffff")
         self.stats_label.pack(pady=10)
 
     def display_contact_statistics(self):
@@ -177,27 +177,27 @@ class ContactBookApp:
             edit_window = tk.Toplevel(self.root)
             edit_window.title("Edit Contact")
             edit_window.geometry("300x300")
-            edit_window.config(bg="darkturquoise")
+            edit_window.config(bg="#FFD700")
 
-            edit_name_label = tk.Label(edit_window, text="Name:", font=("Arial", 15), bg="lawngreen")
+            edit_name_label = tk.Label(edit_window, text="Name:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
             edit_name_label.pack()
             edit_name_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_name_entry.pack()
             edit_name_entry.insert(0, selected_contact["Name"])
 
-            edit_phone_label = tk.Label(edit_window, text="Phone:", font=("Arial", 15), bg="lawngreen")
+            edit_phone_label = tk.Label(edit_window, text="Phone:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
             edit_phone_label.pack()
             edit_phone_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_phone_entry.pack()
             edit_phone_entry.insert(0, selected_contact["Phone"])
 
-            edit_email_label = tk.Label(edit_window, text="Email:", font=("Arial", 15), bg="lawngreen")
+            edit_email_label = tk.Label(edit_window, text="Email:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
             edit_email_label.pack()
             edit_email_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_email_entry.pack()
             edit_email_entry.insert(0, selected_contact["Email"])
 
-            edit_address_label = tk.Label(edit_window, text="Address:", font=("Arial", 15), bg="lawngreen")
+            edit_address_label = tk.Label(edit_window, text="Address:", font=("Arial", 15), bg="#228B22", fg="#ffffff")
             edit_address_label.pack()
             edit_address_entry = tk.Entry(edit_window, font=("Arial", 15), width=40)
             edit_address_entry.pack()
@@ -231,7 +231,7 @@ class ContactBookApp:
                     self.update_contacts_treeview()
                     edit_window.destroy()
 
-            save_button = tk.Button(edit_window, text="Save", command=save_edited_contact, font=("Arial", 15), bg="lawngreen")
+            save_button = tk.Button(edit_window, text="Save", command=save_edited_contact, font=("Arial", 15), bg="#228B22", fg="#ffffff")
             save_button.pack(pady=10)
 
     def delete_contact(self, event=None):
@@ -283,7 +283,7 @@ class ContactBookApp:
 
     def load_contacts_from_csv(self):
         try:
-            with open("contacts.csv", mode="r", newline="") as file:
+            with open("con.csv", mode="r", newline="") as file:
                 reader = csv.DictReader(file)
                 self.contacts = list(reader)
                 # Add the loaded contacts to the SQLite database
